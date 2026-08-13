@@ -48,3 +48,7 @@ captures/
 .vscode/
 *.swp
 *~
+
+# ---------- Python ----------
+__pycache__/
+*.pyc
