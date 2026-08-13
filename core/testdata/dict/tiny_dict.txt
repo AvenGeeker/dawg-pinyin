@@ -1,0 +1,31 @@
+# 自造测试词库（tiny）：格式 word<TAB>pinyin(空格分音节)<TAB>weight
+中	zhong	600
+国	guo	600
+人	ren	600
+中国人	zhong guo ren	1000
+中国	zhong guo	900
+美国	mei guo	500
+好人	hao ren	320
+好	hao	400
+工人	gong ren	350
+工	gong	300
+人民	ren min	520
+民	min	300
+共和国	gong he guo	500
+和	he	420
+平	ping	300
+爱	ai	300
+我	wo	500
+你	ni	500
+他	ta	400
+实力	shi li	500
+事例	shi li	480
+示例	shi li	460
+实	shi	300
+事	shi	280
+例	li	200
+力	li	300
+综合	zong he	500
+具体	ju ti	500
+天	tian	300
+大	da	350
