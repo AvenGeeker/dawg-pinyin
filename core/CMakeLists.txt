@@ -14,6 +14,7 @@ set(DAWG_CORE_SOURCES
     src/pinyin/syllable_table.cc
     src/pinyin/syllabifier.cc
     src/dawg/dawg_reader.cc
+    src/lm/char_lm.cc
 )
 
 add_library(dawg_core STATIC ${DAWG_CORE_SOURCES})
@@ -56,6 +57,7 @@ if(DAWG_BUILD_TESTS AND NOT CMAKE_CROSSCOMPILING)
   set(DAWG_TEST_SOURCES
       tests/syllabifier_test.cc
       tests/dawg_test.cc
+      tests/char_lm_test.cc
   )
   foreach(test_source ${DAWG_TEST_SOURCES})
     get_filename_component(test_name ${test_source} NAME_WE)
