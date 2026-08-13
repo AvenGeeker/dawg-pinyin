@@ -1,0 +1,50 @@
+# ---------- macOS ----------
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# ---------- Build outputs ----------
+build/
+out/
+*.o
+*.obj
+*.a
+*.so
+*.dylib
+*.dSYM/
+
+# ---------- CMake ----------
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+# 注意：CMakePresets.json / CMakeLists.txt 属于源码，勿忽略
+# FetchContent 下载的依赖（GoogleTest 等）都在 build/ 内，已被覆盖
+
+# ---------- Xcode / iOS ----------
+xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+DerivedData/
+*.ipa
+*.dSYM.zip
+platform/DawgIme/DawgIme.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/
+
+# ---------- Android / Gradle ----------
+.gradle/
+**/local.properties
+**/build/
+captures/
+*.apk
+*.aab
+*.keystore
+*.jks
+# 保留 Gradle wrapper，确保任何人可用 ./gradlew
+!**/gradle/wrapper/gradle-wrapper.jar
+
+# ---------- IDE ----------
+.idea/
+*.iml
+.vscode/
+*.swp
+*~
