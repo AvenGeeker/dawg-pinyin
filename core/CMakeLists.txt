@@ -17,6 +17,8 @@ set(DAWG_CORE_SOURCES
     src/pinyin/decoder.cc
     src/dawg/dawg_reader.cc
     src/lm/char_lm.cc
+    src/engine.cc
+    src/capi.cc
 )
 
 add_library(dawg_core STATIC ${DAWG_CORE_SOURCES})
@@ -44,6 +46,11 @@ target_include_directories(dawg_import_rime PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/
 target_link_libraries(dawg_import_rime PRIVATE dawg_core)
 target_compile_options(dawg_import_rime PRIVATE -Wall -Wextra -Werror)
 
+add_executable(dawg_bench tools/bench.cc)
+target_include_directories(dawg_bench PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_link_libraries(dawg_bench PRIVATE dawg_core)
+target_compile_options(dawg_bench PRIVATE -Wall -Wextra -Werror)
+
 if(DAWG_BUILD_TESTS AND NOT CMAKE_CROSSCOMPILING)
   include(FetchContent)
   FetchContent_Declare(
@@ -61,6 +68,7 @@ if(DAWG_BUILD_TESTS AND NOT CMAKE_CROSSCOMPILING)
       tests/dawg_test.cc
       tests/char_lm_test.cc
       tests/decoder_test.cc
+      tests/engine_test.cc
   )
   foreach(test_source ${DAWG_TEST_SOURCES})
     get_filename_component(test_name ${test_source} NAME_WE)
