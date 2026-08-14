@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">DawgIme</string>
+    <string name="ime_name">DawgIme 拼音</string>
+    <string name="subtype_zh_cn">中文（拼音）</string>
 </resources>
