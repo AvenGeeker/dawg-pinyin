@@ -19,8 +19,12 @@ dawg-pinyin/
 │   ├── tests/                 # GoogleTest 单元测试（*_test.cc）
 │   └── testdata/              # 测试用词库/语料（小文件，大的二进制不入库）
 ├── platform/
-│   ├── DawgIme/               # iOS 端（Xcode 工程，SwiftUI）
-│   └── Android/               # Android 端（Gradle，Kotlin + Compose）
+│   ├── DawgIme/               # iOS 端（Xcode 工程，SwiftUI + 键盘扩展）
+│   ├── Android/               # Android 端（Gradle，Kotlin + Compose + JNI）
+│   └── HarmonyOS/             # 鸿蒙端（DevEco，ArkTS + NAPI）
+├── tools/
+│   ├── lm/                    # charlm 训练管线（Python）
+│   └── assets/build_assets.sh # 生产词库一键构建（产物 assets/，不入库）
 └── AGENTS.md
 ```
 
@@ -144,9 +148,33 @@ xcodebuild -project platform/DawgIme/DawgIme.xcodeproj -scheme DawgIme \
 ```
 
 - Kotlin 官方代码风格；依赖版本只改 `gradle/libs.versions.toml`。
-- core 接入方式：`externalNativeBuild { cmake { path = ../../core/CMakeLists.txt } }`
-  + JNI 薄封装（`System.loadLibrary`），JNI 层只做类型转换，不写逻辑。
+- core 接入方式：app-local CMake（`app/src/main/cpp/CMakeLists.txt`）
+  `add_subdirectory` 引入 core 并构建 `dawg_jni` 共享库 + JNI 薄封装
+  （`System.loadLibrary("dawg_jni")`）。不直接以 core/CMakeLists.txt 作为
+  externalNativeBuild 入口，避免把 JNI 目标塞进 core。JNI 层只做类型转换，
+  不写逻辑（契约由 `core/tests/capi_test.cc` 固化）。
 - `local.properties`、`.idea/`、`.gradle/` 不入库。
+
+### 鸿蒙（platform/HarmonyOS，DevEco 工程）
+- Stage 模型；bundleName `com.avengeeker.dawgime`；键盘为
+  `DawgIME`（InputMethodExtensionAbility，`type: inputMethod`），启用指引
+  页在 entry 的 `EntryAbility`。
+- core 接入方式：`entry/src/main/cpp/CMakeLists.txt` `add_subdirectory`
+  引入 core，产出 NAPI 模块 `libdawg_napi.so`（create/search/candidateText/
+  destroy，与 C API 一一对应），同样只做类型转换。
+- 词库资产经 `tools/sync_assets.sh` 同步到 rawfile，扩展启动时复制到
+  filesDir（mmap 需要真实文件路径）。
+- 已知 SDK 限制（详见 platform/HarmonyOS/README.md）：本机 DevEco 3.1
+  为 API 9 且缺 Native 组件；键盘面板 Panel API 需 API 10+，因此该端
+  源码交付、编译后置。
+
+### 三端键盘一致性约定
+- 键盘度量/交互规范三端逐字一致（候选栏 44、键高 42、行距 12、键距 6、
+  边距 3、圆角 4；拼写缓冲 ≤64、空格上屏首候选、退格先删缓冲、回车
+  上屏原始字母、shift 一次性大写、符号页直插）。实现文件：
+  `KeySpec.swift` / `KeySpec.kt` / `KeySpec.ets`（度量与布局）+
+  `KeyboardModel.swift` / `ImeSession.kt` / `KeyboardState.ets`（状态机）。
+  改动任一端必须同步另两端并更新对应单测。
 
 ## 7. Git 与协作约定
 
