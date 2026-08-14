@@ -36,20 +36,23 @@ target_link_libraries(dawg_builder PUBLIC dawg_core)
 target_compile_options(dawg_builder PRIVATE
     -Wall -Wextra -Werror -fno-exceptions -fno-rtti)
 
-add_executable(dawg_build_dict tools/build_dict.cc)
-target_include_directories(dawg_build_dict PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
-target_link_libraries(dawg_build_dict PRIVATE dawg_builder)
-target_compile_options(dawg_build_dict PRIVATE -Wall -Wextra -Werror)
+# Host-only offline tools; excluded from cross builds (NDK / HarmonyOS).
+if(NOT CMAKE_CROSSCOMPILING)
+  add_executable(dawg_build_dict tools/build_dict.cc)
+  target_include_directories(dawg_build_dict PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+  target_link_libraries(dawg_build_dict PRIVATE dawg_builder)
+  target_compile_options(dawg_build_dict PRIVATE -Wall -Wextra -Werror)
 
-add_executable(dawg_import_rime tools/import_rime.cc)
-target_include_directories(dawg_import_rime PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
-target_link_libraries(dawg_import_rime PRIVATE dawg_core)
-target_compile_options(dawg_import_rime PRIVATE -Wall -Wextra -Werror)
+  add_executable(dawg_import_rime tools/import_rime.cc)
+  target_include_directories(dawg_import_rime PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+  target_link_libraries(dawg_import_rime PRIVATE dawg_core)
+  target_compile_options(dawg_import_rime PRIVATE -Wall -Wextra -Werror)
 
-add_executable(dawg_bench tools/bench.cc)
-target_include_directories(dawg_bench PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
-target_link_libraries(dawg_bench PRIVATE dawg_core)
-target_compile_options(dawg_bench PRIVATE -Wall -Wextra -Werror)
+  add_executable(dawg_bench tools/bench.cc)
+  target_include_directories(dawg_bench PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+  target_link_libraries(dawg_bench PRIVATE dawg_core)
+  target_compile_options(dawg_bench PRIVATE -Wall -Wextra -Werror)
+endif()
 
 if(DAWG_BUILD_TESTS AND NOT CMAKE_CROSSCOMPILING)
   include(FetchContent)
@@ -69,6 +72,7 @@ if(DAWG_BUILD_TESTS AND NOT CMAKE_CROSSCOMPILING)
       tests/char_lm_test.cc
       tests/decoder_test.cc
       tests/engine_test.cc
+      tests/capi_test.cc
   )
   foreach(test_source ${DAWG_TEST_SOURCES})
     get_filename_component(test_name ${test_source} NAME_WE)
