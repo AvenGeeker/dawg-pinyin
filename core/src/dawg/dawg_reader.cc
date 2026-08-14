@@ -71,7 +71,7 @@ ErrorCode DawgReader::Parse(const uint8_t* data, size_t size) {
     }
     for (uint16_t k = 0; k < num_entries; ++k) {
       const int32_t w = EntryWeight(first_entry + k);
-      if (k == 0 || w > max_weight_) max_weight_ = w;
+      if (w > max_weight_) max_weight_ = w;
     }
   }
   // Children must be sorted per node (binary search relies on it).

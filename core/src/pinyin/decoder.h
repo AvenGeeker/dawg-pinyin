@@ -37,6 +37,14 @@ class Decoder {
   // Score gap (log10) beyond which a candidate is dropped.
   static constexpr double kCandidateFloor = 6.0;
   static constexpr double kBeamFloor = 12.0;
+  // Per end position, only the heaviest spans enter the beam: dictionary
+  // weight alone rules out the rest, and the beam must stay cheap enough
+  // for on-device keystroke latency.
+  static constexpr int kMaxSpansPerEnd = 64;
+  // Log10-domain penalty per word matched through initial-only (abbreviated)
+  // edges. Keeps shorthand paths available for genuine jianpin input while
+  // stopping high-frequency single chars from outranking full-spelling words.
+  static constexpr double kAbbreviatedPenalty = -2.5;
 
  private:
   const DawgReader& dict_;

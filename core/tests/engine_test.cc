@@ -170,5 +170,25 @@ TEST(CApiTest, SmokeRoundTrip) {
   dawg_engine_destroy(handle);
 }
 
+// The trap lexicon gives six high-frequency single chars whose initials can
+// consume "zhongguo" letter by letter (宗 z, 河 h, 藕 o, 嫩 n, 哥 g, then
+// 国 matching the trailing "guo" in full), and its LM is trained on that
+// junk sequence. Without an abbreviated-edge penalty the junk sentence
+// outranks the full-spelling word 中国.
+TEST(DecoderTrapTest, AbbreviatedPathPenalty) {
+  EngineOptions options;
+  options.dawg_path = DAWG_TESTDATA_DIR "/dict/abbrev_trap.dawg";
+  options.lm_path = DAWG_TESTDATA_DIR "/lm/abbrev_trap.clm";
+  ErrorCode err = ErrorCode::kOk;
+  auto engine = CreateEngine(options, &err);
+  ASSERT_NE(nullptr, engine);
+  ASSERT_EQ(ErrorCode::kOk, err);
+  std::vector<Candidate> candidates;
+  ASSERT_EQ(ErrorCode::kOk, engine->Search("zhongguo", "", &candidates));
+  ASSERT_FALSE(candidates.empty());
+  EXPECT_EQ("\u4e2d\u56fd", candidates.front().text);  // 中国
+  EXPECT_EQ("zhong guo", candidates.front().pinyin);
+}
+
 }  // namespace
 }  // namespace dawg

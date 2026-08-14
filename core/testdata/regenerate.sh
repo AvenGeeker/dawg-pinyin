@@ -19,3 +19,15 @@ python3 "$REPO/tools/lm/eval_lm.py" "$TMP_RAW" "$HERE/corpus/tiny_zh.txt"
 python3 "$REPO/tools/lm/quantize_lm.py" "$TMP_RAW" "$HERE/lm/tiny.clm"
 rm -f "$TMP_RAW"
 echo "regenerated: $HERE/dict/tiny.dawg $HERE/lm/tiny.clm"
+
+# Abbreviation-trap assets: high-frequency single chars plus a corpus that
+# favors them, so the pre-fix decoder ranks abbreviated junk paths above the
+# full-spelling word (engine regression test AbbreviatedPathPenalty).
+"$BUILD/dawg_build_dict" "$HERE/dict/abbrev_trap_dict.txt" \
+  "$HERE/dict/abbrev_trap.dawg"
+TMP_TRAP="$(mktemp -t abbrev_trap.XXXXXX)"
+python3 "$REPO/tools/lm/train_charlm.py" "$HERE/corpus/abbrev_trap_zh.txt" \
+  "$TMP_TRAP" --order 3 --vocab 64 --min-count 1 --top-k 8
+python3 "$REPO/tools/lm/quantize_lm.py" "$TMP_TRAP" "$HERE/lm/abbrev_trap.clm"
+rm -f "$TMP_TRAP"
+echo "regenerated: $HERE/dict/abbrev_trap.dawg $HERE/lm/abbrev_trap.clm"

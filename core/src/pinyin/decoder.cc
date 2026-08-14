@@ -59,6 +59,17 @@ ErrorCode Decoder::Decode(const SyllableGraph& graph,
     }
   }
 
+  // 1b. Keep only the heaviest spans per end position.
+  for (int pos = 1; pos <= n; ++pos) {
+    std::vector<int>& ids = spans_by_end[pos];
+    if (static_cast<int>(ids.size()) <= kMaxSpansPerEnd) continue;
+    std::sort(ids.begin(), ids.end(), [&](int a, int b) {
+      return dict_.EntryWeight(spans[a].entry) >
+             dict_.EntryWeight(spans[b].entry);
+    });
+    ids.resize(kMaxSpansPerEnd);
+  }
+
   // 2. Beam search left to right.
   const double dict_norm =
       std::log10(static_cast<double>(dict_.max_weight()) + 1.0);
@@ -89,9 +100,11 @@ ErrorCode Decoder::Decode(const SyllableGraph& graph,
       const double dict_score =
           std::log10(static_cast<double>(dict_.EntryWeight(span.entry)) +
                      1.0) - dict_norm;
+      const double abbrev_penalty =
+          span.abbreviated ? kAbbreviatedPenalty : 0.0;
       for (const State& s : from) {
         State ns;
-        ns.score = s.score + dict_score +
+        ns.score = s.score + dict_score + abbrev_penalty +
                    (lm_ != nullptr ? lm_->ScoreWord(span.chars, s.tail) : 0.0);
         ns.path = s.path;
         ns.path.push_back(span_id);

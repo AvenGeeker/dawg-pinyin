@@ -1,0 +1,9 @@
+# 简拼陷阱词库：高频单字诱导简拼路径压过全拼词 中国。
+# 格式 word<TAB>pinyin(空格分音节)<TAB>weight
+宗	zong	1000
+河	he	1000
+藕	ou	1000
+嫩	nen	1000
+哥	ge	1000
+国	guo	1000
+中国	zhong guo	900

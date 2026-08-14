@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
+#include <algorithm>
 #include <cstdint>
 #include <cstring>
 #include <string>
@@ -179,6 +180,31 @@ TEST_F(DawgTest, FileLoadRoundTrip) {
   ASSERT_EQ(ErrorCode::kOk, reader.Load(path));
   EXPECT_EQ(reader_.entry_count(), reader.entry_count());
   std::remove(path.c_str());
+}
+
+// Regression: the max-weight scan used to reset per node, so max_weight()
+// returned the last node's first entry weight instead of the global max.
+// Put the large weight on the syllable whose subtree is visited first in
+// the DFS node order and the small one on the last visited subtree.
+TEST(DawgMaxWeightTest, GlobalMaxAcrossNodes) {
+  const SyllableTable& table = SyllableTable::Instance();
+  const int id_a = table.Find("a");
+  const int id_z = table.Find("zuo");
+  ASSERT_GE(id_a, 0);
+  ASSERT_GE(id_z, 0);
+  const std::string_view first = table.text(std::min(id_a, id_z));
+  const std::string_view last = table.text(std::max(id_a, id_z));
+
+  DawgBuilder builder;
+  ASSERT_EQ(ErrorCode::kOk, builder.AddEntry("阿", first, 1000));
+  ASSERT_EQ(ErrorCode::kOk, builder.AddEntry("作", last, 5));
+  ASSERT_EQ(ErrorCode::kOk, builder.Build());
+  const std::vector<uint8_t> image = builder.Serialize();
+
+  DawgReader reader;
+  ASSERT_EQ(ErrorCode::kOk,
+            reader.LoadFromBuffer(image.data(), image.size()));
+  EXPECT_EQ(1000, reader.max_weight());
 }
 
 }  // namespace

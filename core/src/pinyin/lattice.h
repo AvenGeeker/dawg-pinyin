@@ -17,6 +17,7 @@ struct WordSpan {
   uint32_t entry = 0;
   std::vector<int> syllables;      // Concrete syllable ids matched.
   std::vector<char32_t> chars;     // Decoded entry text.
+  bool abbreviated = false;        // True when any edge was initial-only.
 };
 
 // Walks the syllable DAG and the lexicon DAWG simultaneously, emitting every
@@ -30,8 +31,12 @@ class LatticeBuilder {
   void CollectFrom(const SyllableGraph& graph, int start,
                    std::vector<WordSpan>* out) const;
 
-  static constexpr int kMaxSpansPerStart = 256;
-  static constexpr int kMaxStepsPerStart = 20000;
+  // Sized for production lexicons (~60k entries). Full-spelling spans are
+  // emitted first (see CollectFrom); abbreviated-origin spans get their own
+  // smaller budget so initial-only junk cannot starve the decoder.
+  static constexpr int kMaxFullSpansPerStart = 2048;
+  static constexpr int kMaxAbbrevSpansPerStart = 128;
+  static constexpr int kMaxStepsPerStart = 100000;
 
  private:
   const DawgReader& dict_;

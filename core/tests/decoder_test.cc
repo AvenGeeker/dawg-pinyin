@@ -9,6 +9,7 @@
 #include "dawg/dawg_reader.h"
 #include "pinyin/decoder.h"
 #include "pinyin/syllabifier.h"
+#include "util/utf8.h"
 
 namespace dawg {
 namespace {
@@ -97,6 +98,46 @@ TEST_F(DecoderTest, ScoresDecreaseWithinResultList) {
   for (size_t i = 1; i < candidates.size(); ++i) {
     EXPECT_LE(candidates[i].score, candidates[i - 1].score);
   }
+}
+
+// Regression: with hundreds of junk single chars sharing one initial, the
+// abbreviated-edge enumeration used to exhaust the per-start span budget
+// before any full-spelling word was emitted, so full matches disappeared
+// from the candidates entirely.
+TEST(DecoderEnumerationTest, FullMatchesSurviveJunkInitials) {
+  const SyllableTable& table = SyllableTable::Instance();
+  const std::vector<int> initials = table.ByInitial('j');
+  ASSERT_FALSE(initials.empty());
+
+  DawgBuilder builder;
+  int added = 0;
+  for (int rep = 0; rep < 20 && added < 300; ++rep) {
+    for (const int id : initials) {
+      if (added >= 300) break;
+      std::string text;
+      util::AppendUtf8(static_cast<char32_t>(0x4E00 + added), &text);
+      ASSERT_EQ(ErrorCode::kOk,
+                builder.AddEntry(text, table.text(id), 100));
+      ++added;
+    }
+  }
+  ASSERT_EQ(ErrorCode::kOk, builder.AddEntry("今天", "jin tian", 1000));
+  ASSERT_EQ(ErrorCode::kOk, builder.Build());
+  const std::vector<uint8_t> image = builder.Serialize();
+
+  DawgReader reader;
+  ASSERT_EQ(ErrorCode::kOk,
+            reader.LoadFromBuffer(image.data(), image.size()));
+
+  Syllabifier syllabifier;
+  SyllableGraph graph;
+  ASSERT_EQ(ErrorCode::kOk, syllabifier.Segment("jintian", &graph));
+  Decoder decoder(reader, nullptr);
+  std::vector<Candidate> candidates;
+  DecodeOptions options;
+  ASSERT_EQ(ErrorCode::kOk, decoder.Decode(graph, {}, options, &candidates));
+  ASSERT_FALSE(candidates.empty());
+  EXPECT_EQ("今天", candidates.front().text);
 }
 
 }  // namespace

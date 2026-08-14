@@ -41,6 +41,16 @@ bool IsInteger(const std::string& s) {
   return true;
 }
 
+// Parses integer weights, accepting the trailing '%' used by some Rime
+// dictionaries (e.g. luna_pinyin "100%").
+bool ParseWeight(const std::string& token, int* out) {
+  std::string t = token;
+  if (!t.empty() && t.back() == '%') t.pop_back();
+  if (!IsInteger(t)) return false;
+  *out = static_cast<int>(std::strtol(t.c_str(), nullptr, 10));
+  return true;
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
@@ -83,19 +93,24 @@ int main(int argc, char** argv) {
     }
     int weight = 1;
     size_t pinyin_end = tokens.size();
-    if (tokens.size() >= 3 && IsInteger(tokens.back())) {
-      weight = static_cast<int>(std::strtol(tokens.back().c_str(), nullptr, 10));
+    if (tokens.size() >= 3 && ParseWeight(tokens.back(), &weight)) {
       pinyin_end = tokens.size() - 1;
     }
     std::string pinyin;
     bool valid = true;
     for (size_t i = 1; i < pinyin_end; ++i) {
-      if (table.Find(tokens[i]) < 0) {
+      std::string syllable = tokens[i];
+      // Drop trailing tone digits (terra-pinyin style "wo3").
+      if (!syllable.empty() && syllable.back() >= '1' &&
+          syllable.back() <= '5') {
+        syllable.pop_back();
+      }
+      if (table.Find(syllable) < 0) {
         valid = false;
         break;
       }
       if (!pinyin.empty()) pinyin.push_back(' ');
-      pinyin += tokens[i];
+      pinyin += syllable;
     }
     if (!valid || pinyin.empty()) {
       ++skipped;
