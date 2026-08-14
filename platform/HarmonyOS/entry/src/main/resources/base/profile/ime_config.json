@@ -1,0 +1,16 @@
+{
+  "inputMethod": {
+    "icon": "$media:icon",
+    "label": "$string:ime_label",
+    "privacyStatement": "",
+    "settings": "",
+    "subtypes": [
+      {
+        "id": "zh-CN-pinyin",
+        "label": "$string:subtype_zh",
+        "locale": "zh-CN",
+        "mode": "keyboard"
+      }
+    ]
+  }
+}

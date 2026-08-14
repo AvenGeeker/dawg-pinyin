@@ -1,0 +1,10 @@
+{
+  "modelVersion": "5.0.0",
+  "name": "dawgime",
+  "version": "1.0.0",
+  "description": "DawgIme pinyin input method (HarmonyOS shell)",
+  "main": "",
+  "author": "avengeeker",
+  "license": "Apache-2.0",
+  "dependencies": {}
+}

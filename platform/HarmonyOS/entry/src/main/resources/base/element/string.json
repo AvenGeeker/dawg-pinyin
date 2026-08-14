@@ -1,0 +1,10 @@
+{
+  "string": [
+    { "name": "module_desc", "value": "DawgIme entry module" },
+    { "name": "ability_desc", "value": "DawgIme setup guide" },
+    { "name": "ability_label", "value": "DawgIme" },
+    { "name": "ime_desc", "value": "DawgIme pinyin keyboard" },
+    { "name": "ime_label", "value": "DawgIme Pinyin" },
+    { "name": "subtype_zh", "value": "Chinese (Pinyin)" }
+  ]
+}

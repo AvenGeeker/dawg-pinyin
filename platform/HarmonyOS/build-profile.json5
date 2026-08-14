@@ -1,0 +1,14 @@
+{
+  "app": {
+    "compileSdkVersion": 9,
+    "compatibleSdkVersion": 9,
+    "targetSdkVersion": 9,
+    "signingConfigs": [],
+    "targets": [
+      {
+        "name": "default",
+        "runtimeOS": "HarmonyOS"
+      }
+    ]
+  }
+}

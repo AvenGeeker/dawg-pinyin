@@ -1,0 +1,11 @@
+{
+  "name": "entry",
+  "version": "1.0.0",
+  "description": "DawgIme entry module",
+  "main": "",
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "libdawg_napi.so": "file:./src/main/cpp/types/libdawg_napi"
+  }
+}
