@@ -22,6 +22,23 @@ python3 tools/lm/eval_lm.py charlm.raw heldout.norm.txt --max-ppl 30
 python3 tools/lm/quantize_lm.py charlm.raw charlm.clm
 ```
 
+## 生产语料（tools/assets/build_assets.sh）
+
+- `prepare_corpus.py` 支持从 stdin 流式读取（`-`），配合 `--max-lines`
+  可在语料达到目标句数时提前终止网络下载（zhwiki dump 场景）。
+- 生产混合语料 = zhwiki 百科（HF 镜像清洗版，`fetch_wiki_json.py`）
+  + LCCC 日常对话（`fetch_lccc.py`，词分隔文本去空格还原），
+  由 `tools/assets/build_assets.sh` 一键构建；默认 2,000,000 句 wiki +
+  1,000,000 句 LCCC，可用 `DAWG_LM_MAX_LINES` / `DAWG_LCCC_LINES` 调整。
+- 困惑度门禁：非 CJK 字符断句（与运行时上下文语义一致）使平均句长仅
+  约 8 字符，历史 `--max-ppl 30` 在该规模不可达；构建脚本按实测校准为
+  150（order 6 混合语料约 88，order 3 约 114）。
+- 阶数与体积（同语料实测）：order 6 ≈ 609MB、order 5 ≈ 400MB、
+  order 3 + min-count 16 ≈ 39.8MiB（ppl ≈ 127）。训练器对每个上下文保底保留一个子节点，
+  节点数由上下文多样性决定，top-k/min-count 对高阶体积影响有限；
+  因此构建脚本默认 order 3 / min-count 16（40MiB 预算内），可用 `DAWG_LM_ORDER` 等
+  环境变量覆盖做实验。
+
 ## 说明与限制
 
 - 计数在内存中进行，面向 demo/测试规模语料；全量语料训练请在内存充足的

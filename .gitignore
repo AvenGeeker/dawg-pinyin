@@ -52,3 +52,15 @@ captures/
 # ---------- Python ----------
 __pycache__/
 *.pyc
+
+# ---------- IME assets (generated, never committed) ----------
+/assets/
+Resources/*
+!Resources/README.md
+
+# ---------- HarmonyOS generated assets ----------
+platform/HarmonyOS/entry/src/main/resources/rawfile/dawg_pinyin.*
+platform/HarmonyOS/entry/.cxx/
+platform/HarmonyOS/**/build/
+platform/HarmonyOS/.hvigor/
+platform/HarmonyOS/oh_modules/

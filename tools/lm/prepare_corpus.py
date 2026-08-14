@@ -36,14 +36,46 @@ def segments_from_text(text: str):
 
 
 def open_input(path: str):
+    if path == "-":
+        return bz2.open(sys.stdin.buffer, "rt", encoding="utf-8",
+                        errors="replace")
     if path.endswith(".bz2"):
         return bz2.open(path, "rt", encoding="utf-8", errors="replace")
     return open(path, "r", encoding="utf-8", errors="replace")
 
 
+def iter_wiki_texts(fin, chunk_size: int = 1 << 20):
+    """Yield <text> element bodies from a streamed MediaWiki XML dump.
+
+    Reads in chunks so multi-GB dumps never sit in memory; a carry-over
+    tail keeps matches that straddle chunk boundaries intact.
+    """
+    buf = ""
+    carry = ""
+    while True:
+        data = fin.read(chunk_size)
+        eof = not data
+        buf = carry + data
+        pos = 0
+        while True:
+            m = TEXT_RE.search(buf, pos)
+            if m is None:
+                break
+            yield m.group(1)
+            pos = m.end()
+        if eof:
+            return
+        # Keep everything from the last unprocessed match start (a partial
+        # <text ...>...</text> may span into the next chunk); drop the rest.
+        lt = buf.rfind("<text", pos)
+        carry = buf[lt:] if lt != -1 else ""
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("input", help="raw text or wiki XML dump (.bz2 ok)")
+    ap.add_argument("input",
+                    help="raw text or wiki XML dump (.bz2 ok; '-' = stdin, "
+                         "which bz2-decodes streamed input)")
     ap.add_argument("output", help="normalized corpus path")
     ap.add_argument("--wiki", action="store_true",
                     help="treat input as a MediaWiki XML dump")
@@ -57,9 +89,8 @@ def main() -> int:
     with open_input(args.input) as fin, open(args.output, "w",
                                               encoding="utf-8") as fout:
         if wiki:
-            content = fin.read()
-            for match in TEXT_RE.finditer(content):
-                text = WIKI_STRIP_RE.sub(" ", match.group(1))
+            for body in iter_wiki_texts(fin):
+                text = WIKI_STRIP_RE.sub(" ", body)
                 for seg in segments_from_text(text):
                     if len(seg) >= 2:
                         fout.write(seg + "\n")

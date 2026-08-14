@@ -8,80 +8,66 @@ import argparse
 import struct
 import sys
 
-from lm_common import (BOS_CHAR, BOS_ID, quantize_backoff, quantize_prob,
-                       load_model)
+from lm_common import (BOS_CHAR, BOS_ID, PROB_FLOOR, quantize_backoff,
+                       quantize_prob, load_model)
 
 MAGIC = b"CLM1"
 VERSION = 1
 
 
-class Node:
-    __slots__ = ("char_id", "prob", "bo", "children")
+def build_node_blob(model):
+    """Memory-efficient BFS node emission.
 
-    def __init__(self, char_id):
-        self.char_id = char_id
-        self.prob = None
-        self.bo = 0.0
-        self.children = {}
-
-
-def build_trie(model):
-    nodes = [Node(BOS_ID)]
+    Trie nodes are every prefix of every stored n-gram key (pruning may
+    remove an n-gram while keeping longer extensions, so prefixes are not
+    necessarily keys themselves). Tuple lexicographic order equals BFS
+    child order (parent order x sorted char id), so sorting keys level by
+    level and threading child ranges with two pointers replaces the full
+    in-memory Node trie.
+    """
     probs = model["probs"]
     backoffs = model["backoffs"]
-    for key, log10_p in probs.items():
-        node = nodes[0]
-        for char_id in key[:-1]:
-            nxt = node.children.get(char_id)
-            if nxt is None:
-                nxt = len(nodes)
-                nodes.append(Node(char_id))
-                node.children[char_id] = nxt
-            node = nodes[nxt]
-        last = key[-1]
-        nxt = node.children.get(last)
-        if nxt is None:
-            nxt = len(nodes)
-            nodes.append(Node(last))
-            node.children[last] = nxt
-        nodes[nxt].prob = log10_p
-    # Backoff weights: attach stored values by walking trie paths.
-    def walk(idx, path):
-        node = nodes[idx]
-        if path:
-            node.bo = backoffs.get(path, 0.0)
-        for char_id, child in node.children.items():
-            walk(child, path + (char_id,))
-    walk(0, ())
-    return nodes
+    all_keys = list(probs.keys())
+    max_len = max(len(k) for k in all_keys)
 
+    # levels[d] = sorted unique d-prefixes of all keys (trie depth d).
+    levels = {}
+    for depth in range(1, max_len + 1):
+        levels[depth] = sorted({k[:depth] for k in all_keys
+                                if len(k) >= depth})
 
-def emit(nodes):
-    """BFS-number nodes so every node's children are contiguous in the node
-    array (the reader indexes children straight into the node array)."""
-    order = [0]
-    first_child = {}
-    cursor = 0
-    while cursor < len(order):
-        idx = order[cursor]
-        kids = [nodes[idx].children[c] for c in sorted(nodes[idx].children)]
-        if kids:
-            first_child[idx] = len(order)
-            order.extend(kids)
-        else:
-            first_child[idx] = 0
-        cursor += 1
+    blob = bytearray()
 
-    node_blob = bytearray()
-    for old_idx in order:
-        node = nodes[old_idx]
-        num_children = len(node.children)
-        fc = first_child[old_idx] if num_children else 0
-        prob_q = quantize_prob(node.prob if node.prob is not None else -10.0)
-        node_blob += struct.pack("<IBBHII", node.char_id, prob_q,
-                                 quantize_backoff(node.bo), 0, fc,
-                                 num_children)
-    return bytes(node_blob), len(order)
+    def pack(char_id, prob, bo, first_child, num_children):
+        blob.extend(struct.pack(
+            "<IBBHII", char_id,
+            quantize_prob(prob if prob is not None else PROB_FLOOR),
+            quantize_backoff(bo), 0, first_child, num_children))
+
+    # Root node.
+    level1 = levels.get(1, [])
+    pack(BOS_ID, None, 0.0, 1 if level1 else 0, len(level1))
+    node_count = 1
+    next_level_start = 1  # BFS index where level 1 begins
+
+    for depth in range(1, max_len + 1):
+        current = levels[depth]
+        children = levels.get(depth + 1, [])
+        level_start = next_level_start
+        child_base = level_start + len(current)
+        child_cursor = 0
+        for key in current:
+            start = child_cursor
+            while child_cursor < len(children) and \
+                    children[child_cursor][:depth] == key:
+                child_cursor += 1
+            num = child_cursor - start
+            first = child_base + start if num else 0
+            pack(key[-1], probs.get(key), backoffs.get(key, 0.0), first, num)
+            node_count += 1
+        next_level_start = child_base
+
+    return bytes(blob), node_count
 
 
 def main() -> int:
@@ -92,8 +78,7 @@ def main() -> int:
 
     model = load_model(args.model_raw)
     vocab_chars = model["vocab"]
-    nodes = build_trie(model)
-    node_blob, node_count = emit(nodes)
+    node_blob, node_count = build_node_blob(model)
 
     vocab_blob = bytearray()
     for i, ch in enumerate(vocab_chars):
