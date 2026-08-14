@@ -6,14 +6,84 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		DA0000000000000000000024 /* error.cc in Sources */ = {isa = PBXBuildFile; fileRef = DA0000000000000000000023 /* error.cc */; };
+		DA0000000000000000000026 /* capi.cc in Sources */ = {isa = PBXBuildFile; fileRef = DA0000000000000000000025 /* capi.cc */; };
+		DA0000000000000000000028 /* engine.cc in Sources */ = {isa = PBXBuildFile; fileRef = DA0000000000000000000027 /* engine.cc */; };
+		DA000000000000000000002A /* mmap_file.cc in Sources */ = {isa = PBXBuildFile; fileRef = DA0000000000000000000029 /* mmap_file.cc */; };
+		DA000000000000000000002C /* utf8.cc in Sources */ = {isa = PBXBuildFile; fileRef = DA000000000000000000002B /* utf8.cc */; };
+		DA000000000000000000002E /* syllable_table.cc in Sources */ = {isa = PBXBuildFile; fileRef = DA000000000000000000002D /* syllable_table.cc */; };
+		DA0000000000000000000030 /* syllabifier.cc in Sources */ = {isa = PBXBuildFile; fileRef = DA000000000000000000002F /* syllabifier.cc */; };
+		DA0000000000000000000032 /* lattice.cc in Sources */ = {isa = PBXBuildFile; fileRef = DA0000000000000000000031 /* lattice.cc */; };
+		DA0000000000000000000034 /* decoder.cc in Sources */ = {isa = PBXBuildFile; fileRef = DA0000000000000000000033 /* decoder.cc */; };
+		DA0000000000000000000036 /* dawg_reader.cc in Sources */ = {isa = PBXBuildFile; fileRef = DA0000000000000000000035 /* dawg_reader.cc */; };
+		DA0000000000000000000038 /* char_lm.cc in Sources */ = {isa = PBXBuildFile; fileRef = DA0000000000000000000037 /* char_lm.cc */; };
+		DA0000000000000000000013 /* libdawgcore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DA0000000000000000000001 /* libdawgcore.a */; };
+		DA0000000000000000000014 /* DawgImeKeyboard.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = DA0000000000000000000002 /* DawgImeKeyboard.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		DA0000000000000000000016 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = FC6996DB302E1BD500F8E3A2 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DA0000000000000000000009;
+			remoteInfo = DawgCore;
+		};
+		DA0000000000000000000018 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = FC6996DB302E1BD500F8E3A2 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DA000000000000000000000A;
+			remoteInfo = DawgImeKeyboard;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		DA0000000000000000000012 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				DA0000000000000000000014 /* DawgImeKeyboard.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		DA0000000000000000000023 /* error.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = error.cc; sourceTree = "<group>"; };
+		DA0000000000000000000025 /* capi.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = capi.cc; sourceTree = "<group>"; };
+		DA0000000000000000000027 /* engine.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = engine.cc; sourceTree = "<group>"; };
+		DA0000000000000000000029 /* mmap_file.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = mmap_file.cc; sourceTree = "<group>"; };
+		DA000000000000000000002B /* utf8.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = utf8.cc; sourceTree = "<group>"; };
+		DA000000000000000000002D /* syllable_table.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = syllable_table.cc; sourceTree = "<group>"; };
+		DA000000000000000000002F /* syllabifier.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = syllabifier.cc; sourceTree = "<group>"; };
+		DA0000000000000000000031 /* lattice.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = lattice.cc; sourceTree = "<group>"; };
+		DA0000000000000000000033 /* decoder.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = decoder.cc; sourceTree = "<group>"; };
+		DA0000000000000000000035 /* dawg_reader.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = dawg_reader.cc; sourceTree = "<group>"; };
+		DA0000000000000000000037 /* char_lm.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = char_lm.cc; sourceTree = "<group>"; };
 		FC6996E3302E1BD500F8E3A2 /* DawgIme.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DawgIme.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		DA0000000000000000000001 /* libdawgcore.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libdawgcore.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		DA0000000000000000000002 /* DawgImeKeyboard.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = DawgImeKeyboard.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		FC6996E5302E1BD500F8E3A2 /* DawgIme */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = DawgIme;
+			sourceTree = "<group>";
+		};
+		DA0000000000000000000003 /* DawgImeKeyboard */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = DawgImeKeyboard;
+			sourceTree = "<group>";
+		};
+		DA0000000000000000000004 /* Resources */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Resources;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -26,6 +96,21 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		DA000000000000000000000C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DA000000000000000000000F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DA0000000000000000000013 /* libdawgcore.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -33,6 +118,9 @@
 			isa = PBXGroup;
 			children = (
 				FC6996E5302E1BD500F8E3A2 /* DawgIme */,
+				DA0000000000000000000003 /* DawgImeKeyboard */,
+				DA0000000000000000000004 /* Resources */,
+				DA0000000000000000000005 /* core */,
 				FC6996E4302E1BD500F8E3A2 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,8 +129,61 @@
 			isa = PBXGroup;
 			children = (
 				FC6996E3302E1BD500F8E3A2 /* DawgIme.app */,
+				DA0000000000000000000002 /* DawgImeKeyboard.appex */,
+				DA0000000000000000000001 /* libdawgcore.a */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		DA0000000000000000000005 /* core */ = {
+			isa = PBXGroup;
+			children = (
+				DA0000000000000000000023 /* error.cc */,
+				DA0000000000000000000025 /* capi.cc */,
+				DA0000000000000000000027 /* engine.cc */,
+				DA000000000000000000001F /* util */,
+				DA0000000000000000000020 /* pinyin */,
+				DA0000000000000000000021 /* dawg */,
+				DA0000000000000000000022 /* lm */,
+			);
+			name = core;
+			path = ../../core/src;
+			sourceTree = "<group>";
+		};
+		DA000000000000000000001F /* util */ = {
+			isa = PBXGroup;
+			children = (
+								DA0000000000000000000029 /* mmap_file.cc */,
+								DA000000000000000000002B /* utf8.cc */,
+			);
+			path = util;
+			sourceTree = "<group>";
+		};
+		DA0000000000000000000020 /* pinyin */ = {
+			isa = PBXGroup;
+			children = (
+								DA000000000000000000002D /* syllable_table.cc */,
+								DA000000000000000000002F /* syllabifier.cc */,
+								DA0000000000000000000031 /* lattice.cc */,
+								DA0000000000000000000033 /* decoder.cc */,
+			);
+			path = pinyin;
+			sourceTree = "<group>";
+		};
+		DA0000000000000000000021 /* dawg */ = {
+			isa = PBXGroup;
+			children = (
+								DA0000000000000000000035 /* dawg_reader.cc */,
+			);
+			path = dawg;
+			sourceTree = "<group>";
+		};
+		DA0000000000000000000022 /* lm */ = {
+			isa = PBXGroup;
+			children = (
+								DA0000000000000000000037 /* char_lm.cc */,
+			);
+			path = lm;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -52,23 +193,70 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = FC6996EE302E1BD700F8E3A2 /* Build configuration list for PBXNativeTarget "DawgIme" */;
 			buildPhases = (
+				DA0000000000000000000011 /* Sync IME Assets */,
 				FC6996DF302E1BD500F8E3A2 /* Sources */,
 				FC6996E0302E1BD500F8E3A2 /* Frameworks */,
 				FC6996E1302E1BD500F8E3A2 /* Resources */,
+				DA0000000000000000000012 /* Embed App Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				DA0000000000000000000017 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				FC6996E5302E1BD500F8E3A2 /* DawgIme */,
+				DA0000000000000000000004 /* Resources */,
 			);
 			name = DawgIme;
 			packageProductDependencies = (
 			);
 			productName = DawgIme;
-			productReference = FC6996E3302E1BD500F8E3A2 /* DawgIme.app */;
+			productReference = FC6996E3302E1BD500F8E3A2 /* DawgIme */;
 			productType = "com.apple.product-type.application";
+		};
+		DA0000000000000000000009 /* DawgCore */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DA0000000000000000000019 /* Build configuration list for PBXNativeTarget "DawgCore" */;
+			buildPhases = (
+				DA000000000000000000000B /* Sources */,
+				DA000000000000000000000C /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = DawgCore;
+			packageProductDependencies = (
+			);
+			productName = DawgCore;
+			productReference = DA0000000000000000000001 /* DawgCore */;
+			productType = "com.apple.product-type.library.static";
+		};
+		DA000000000000000000000A /* DawgImeKeyboard */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DA000000000000000000001C /* Build configuration list for PBXNativeTarget "DawgImeKeyboard" */;
+			buildPhases = (
+				DA000000000000000000000D /* Sync IME Assets */,
+				DA000000000000000000000E /* Sources */,
+				DA000000000000000000000F /* Frameworks */,
+				DA0000000000000000000010 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				DA0000000000000000000015 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				DA0000000000000000000003 /* DawgImeKeyboard */,
+				DA0000000000000000000004 /* Resources */,
+			);
+			name = DawgImeKeyboard;
+			packageProductDependencies = (
+			);
+			productName = DawgImeKeyboard;
+			productReference = DA0000000000000000000002 /* DawgImeKeyboard */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -81,6 +269,12 @@
 				LastUpgradeCheck = 2650;
 				TargetAttributes = {
 					FC6996E2302E1BD500F8E3A2 = {
+						CreatedOnToolsVersion = 26.5;
+					};
+					DA0000000000000000000009 = {
+						CreatedOnToolsVersion = 26.5;
+					};
+					DA000000000000000000000A = {
 						CreatedOnToolsVersion = 26.5;
 					};
 				};
@@ -100,6 +294,8 @@
 			projectRoot = "";
 			targets = (
 				FC6996E2302E1BD500F8E3A2 /* DawgIme */,
+				DA0000000000000000000009 /* DawgCore */,
+				DA000000000000000000000A /* DawgImeKeyboard */,
 			);
 		};
 /* End PBXProject section */
@@ -112,7 +308,57 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		DA0000000000000000000010 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		DA0000000000000000000011 /* Sync IME Assets */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Sync IME Assets";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -e\nDEST=\"$SRCROOT/Resources\"\nmkdir -p \"$DEST\"\nASSETS=\"$SRCROOT/../../assets\"\nTD=\"$SRCROOT/../../core/testdata\"\nif [ -f \"$ASSETS/dawg_pinyin.dawg\" ]; then cp -f \"$ASSETS/dawg_pinyin.dawg\" \"$DEST/dawg_pinyin.dawg\"; else cp -f \"$TD/dict/tiny.dawg\" \"$DEST/dawg_pinyin.dawg\"; fi\nif [ -f \"$ASSETS/dawg_pinyin.clm\" ]; then cp -f \"$ASSETS/dawg_pinyin.clm\" \"$DEST/dawg_pinyin.clm\"; else cp -f \"$TD/lm/tiny.clm\" \"$DEST/dawg_pinyin.clm\"; fi";
+			showEnvVarsInLog = 0;
+		};
+		DA000000000000000000000D /* Sync IME Assets */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Sync IME Assets";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -e\nDEST=\"$SRCROOT/Resources\"\nmkdir -p \"$DEST\"\nASSETS=\"$SRCROOT/../../assets\"\nTD=\"$SRCROOT/../../core/testdata\"\nif [ -f \"$ASSETS/dawg_pinyin.dawg\" ]; then cp -f \"$ASSETS/dawg_pinyin.dawg\" \"$DEST/dawg_pinyin.dawg\"; else cp -f \"$TD/dict/tiny.dawg\" \"$DEST/dawg_pinyin.dawg\"; fi\nif [ -f \"$ASSETS/dawg_pinyin.clm\" ]; then cp -f \"$ASSETS/dawg_pinyin.clm\" \"$DEST/dawg_pinyin.clm\"; else cp -f \"$TD/lm/tiny.clm\" \"$DEST/dawg_pinyin.clm\"; fi";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		FC6996DF302E1BD500F8E3A2 /* Sources */ = {
@@ -122,9 +368,145 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		DA000000000000000000000B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DA0000000000000000000024 /* error.cc in Sources */,
+				DA0000000000000000000026 /* capi.cc in Sources */,
+				DA0000000000000000000028 /* engine.cc in Sources */,
+				DA000000000000000000002A /* mmap_file.cc in Sources */,
+				DA000000000000000000002C /* utf8.cc in Sources */,
+				DA000000000000000000002E /* syllable_table.cc in Sources */,
+				DA0000000000000000000030 /* syllabifier.cc in Sources */,
+				DA0000000000000000000032 /* lattice.cc in Sources */,
+				DA0000000000000000000034 /* decoder.cc in Sources */,
+				DA0000000000000000000036 /* dawg_reader.cc in Sources */,
+				DA0000000000000000000038 /* char_lm.cc in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DA000000000000000000000E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		DA0000000000000000000015 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DA0000000000000000000009 /* DawgCore */;
+			targetProxy = DA0000000000000000000016 /* PBXContainerItemProxy */;
+		};
+		DA0000000000000000000017 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DA000000000000000000000A /* DawgImeKeyboard */;
+			targetProxy = DA0000000000000000000018 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		DA000000000000000000001A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_CPP_RTTI = NO;
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/../../core/include",
+					"$(SRCROOT)/../../core/src",
+				);
+				OTHER_CPLUSPLUSFLAGS = (
+					"-Wall",
+					"-Wextra",
+					"-Werror",
+				);
+				PRODUCT_NAME = dawgcore;
+				SKIP_INSTALL = YES;
+			};
+		name = Debug;
+		};
+		DA000000000000000000001B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_CPP_RTTI = NO;
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/../../core/include",
+					"$(SRCROOT)/../../core/src",
+				);
+				OTHER_CPLUSPLUSFLAGS = (
+					"-Wall",
+					"-Wextra",
+					"-Werror",
+				);
+				PRODUCT_NAME = dawgcore;
+				SKIP_INSTALL = YES;
+			};
+		name = Release;
+		};
+		DA000000000000000000001D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/../../core/include",
+				);
+				INFOPLIST_FILE = DawgImeKeyboard-Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"-lc++",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.avengeeker.DawgIme.Keyboard;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = DawgImeKeyboard/DawgImeKeyboard-Bridging-Header.h;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+		name = Debug;
+		};
+		DA000000000000000000001E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/../../core/include",
+				);
+				INFOPLIST_FILE = DawgImeKeyboard-Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"-lc++",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.avengeeker.DawgIme.Keyboard;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = DawgImeKeyboard/DawgImeKeyboard-Bridging-Header.h;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+		name = Release;
+		};
 		FC6996EC302E1BD700F8E3A2 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -187,6 +569,7 @@
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
+		name = Debug;
 		};
 		FC6996ED302E1BD700F8E3A2 /* Release */ = {
 			isa = XCBuildConfiguration;
@@ -243,6 +626,7 @@
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
+		name = Release;
 		};
 		FC6996EF302E1BD700F8E3A2 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -250,6 +634,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -274,6 +659,7 @@
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
+		name = Debug;
 		};
 		FC6996F0302E1BD700F8E3A2 /* Release */ = {
 			isa = XCBuildConfiguration;
@@ -281,6 +667,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -305,6 +692,7 @@
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
+		name = Release;
 		};
 /* End XCBuildConfiguration section */
 
@@ -323,6 +711,24 @@
 			buildConfigurations = (
 				FC6996EF302E1BD700F8E3A2 /* Debug */,
 				FC6996F0302E1BD700F8E3A2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DA0000000000000000000019 /* Build configuration list for PBXNativeTarget "DawgCore" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DA000000000000000000001A /* Debug */,
+				DA000000000000000000001B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DA000000000000000000001C /* Build configuration list for PBXNativeTarget "DawgImeKeyboard" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DA000000000000000000001D /* Debug */,
+				DA000000000000000000001E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

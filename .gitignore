@@ -55,8 +55,8 @@ __pycache__/
 
 # ---------- IME assets (generated, never committed) ----------
 /assets/
-Resources/*
-!Resources/README.md
+platform/DawgIme/Resources/*
+!platform/DawgIme/Resources/README.md
 
 # ---------- HarmonyOS generated assets ----------
 platform/HarmonyOS/entry/src/main/resources/rawfile/dawg_pinyin.*
