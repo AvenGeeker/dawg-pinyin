@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -51,13 +52,20 @@ fun KeyboardScreen(session: ImeSession, dark: Boolean, version: Int) {
     BoxWithConstraints(Modifier.background(theme.background)) {
         val density = LocalDensity.current
         val widthDp = with(density) { constraints.maxWidth.toDp() }.value
-        val frames = remember(widthDp, session.page, version) {
-            KeyLayout.compute(widthDp, session.page)
-        }
-        TopBar(session, theme, version)
-        Box(Modifier.fillMaxWidth()) {
-            for (frame in frames) {
-                KeyButton(frame, session, theme, version)
+        // The IME window wrap-contents the input view and key caps are
+        // absolutely positioned via offset() (which does not contribute to
+        // layout size), so the root must claim the spec height explicitly;
+        // otherwise the window collapses to the top bar only.
+        val heightDp = KeyLayout.totalHeight(widthDp)
+        Box(Modifier.fillMaxWidth().height(heightDp.dp)) {
+            val frames = remember(widthDp, session.page, version) {
+                KeyLayout.compute(widthDp, session.page)
+            }
+            TopBar(session, theme, version)
+            Box(Modifier.fillMaxSize()) {
+                for (frame in frames) {
+                    KeyButton(frame, session, theme, version)
+                }
             }
         }
     }

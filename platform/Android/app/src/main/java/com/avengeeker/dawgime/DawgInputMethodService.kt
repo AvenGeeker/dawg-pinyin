@@ -94,9 +94,13 @@ class DawgInputMethodService :
                         KeyboardScreen(session, isSystemInDarkTheme(), version)
                     }
                 },
+                // Height must wrap the fixed-height Compose root so the
+                // IME window sizes to the keyboard spec (262dp), not the
+                // screen; MATCH_PARENT here collapses/expands unpredictably
+                // depending on the window's measure mode.
                 FrameLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
                 ),
             )
         }
