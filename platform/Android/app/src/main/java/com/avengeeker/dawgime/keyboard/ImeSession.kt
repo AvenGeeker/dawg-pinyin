@@ -2,8 +2,9 @@
 package com.avengeeker.dawgime.keyboard
 
 /**
- * Platform-agnostic input state machine. Mirrors KeyboardModel.swift (iOS)
- * and the ArkTS session in DawgIME.ets (HarmonyOS); keep behaviors aligned.
+ * Platform-agnostic input state machine (WeChat-style behaviors). Mirrors
+ * KeyboardModel.swift (iOS) and KeyboardState.ets (HarmonyOS); keep
+ * behaviors aligned.
  */
 class ImeSession(
     private val search: (input: String, context: String) -> List<String>,
@@ -15,6 +16,13 @@ class ImeSession(
         fun deleteBackward()
         fun sendReturn()
         fun contextBeforeInput(): String
+        /** Mirrors the pinyin buffer into the host as composing/marked text. */
+        fun setComposingText(text: String)
+        /** Localized editor-action label shown on the idle action key. */
+        fun editorActionLabel(): String
+        fun performEditorAction()
+        fun hideKeyboard()
+        fun switchToNextKeyboard()
     }
 
     var page: KeyboardPage = KeyboardPage.LETTERS
@@ -24,6 +32,8 @@ class ImeSession(
     var candidates: List<String> = emptyList()
         private set
     var shiftOn: Boolean = false
+        private set
+    var chineseMode: Boolean = true
         private set
     var engineReady: Boolean = true
         private set
@@ -48,18 +58,44 @@ class ImeSession(
             return source.takeLast(KeyMetrics.CONTEXT_CHARS)
         }
 
+    val isComposing: Boolean get() = buffer.isNotEmpty()
+
+    fun actionLabel(): String = sink.editorActionLabel()
+
     fun tap(frame: KeyFrame) {
         dispatch(frame)
         onChange?.invoke()
     }
 
+    fun hideKeyboard() {
+        sink.hideKeyboard()
+        onChange?.invoke()
+    }
+
+    fun switchToNextKeyboard() {
+        sink.switchToNextKeyboard()
+        onChange?.invoke()
+    }
+
     private fun dispatch(frame: KeyFrame) {
         when (frame.kind) {
-            KeyKind.CHAR ->
-                if (page == KeyboardPage.LETTERS) {
-                    appendLetter(frame.label)
+            KeyKind.CHAR -> when {
+                page != KeyboardPage.LETTERS -> commit(frame.label)
+                chineseMode -> appendLetter(frame.label)
+                else -> {
+                    val text = if (shiftOn) frame.label.uppercase()
+                    else frame.label.lowercase()
+                    shiftOn = false // one-shot shift
+                    commit(text)
+                }
+            }
+            KeyKind.COMMA -> commit(if (chineseMode) "，" else ",")
+            KeyKind.LANG_TOGGLE -> toggleLanguage()
+            KeyKind.ACTION ->
+                if (buffer.isNotEmpty()) {
+                    commit(buffer) // 确定: commit raw letters
                 } else {
-                    commit(frame.label) // symbols insert directly
+                    sink.performEditorAction()
                 }
             KeyKind.SHIFT ->
                 if (page == KeyboardPage.LETTERS) shiftOn = !shiftOn
@@ -96,6 +132,14 @@ class ImeSession(
         onChange?.invoke()
     }
 
+    private fun toggleLanguage() {
+        // Committing the pending buffer first matches WeChat behavior.
+        if (buffer.isNotEmpty()) {
+            commit(candidates.firstOrNull() ?: buffer)
+        }
+        chineseMode = !chineseMode
+    }
+
     private fun appendLetter(letter: String) {
         if (buffer.length >= KeyMetrics.MAX_BUFFER_LEN) return
         buffer += if (shiftOn) letter.uppercase() else letter.lowercase()
@@ -105,6 +149,7 @@ class ImeSession(
 
     private fun commit(text: String) {
         if (text.isEmpty()) return
+        sink.setComposingText("")
         sink.insertText(text)
         buffer = ""
         candidates = emptyList()
@@ -117,5 +162,6 @@ class ImeSession(
         } else {
             emptyList()
         }
+        sink.setComposingText(buffer)
     }
 }

@@ -4,7 +4,7 @@ package com.avengeeker.dawgime.keyboard
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 
-/** Exact palette from the shared three-platform keyboard spec. */
+/** WeChat-style palette shared by the three platform keyboards. */
 @Immutable
 data class KeyboardTheme(
     val background: Color,
@@ -12,7 +12,10 @@ data class KeyboardTheme(
     val specialKey: Color,
     val pressedKey: Color,
     val pressedSpecialKey: Color,
+    val accent: Color,
+    val pressedAccent: Color,
     val text: Color,
+    val textOnAccent: Color,
     val separator: Color,
 ) {
     companion object {
@@ -22,7 +25,10 @@ data class KeyboardTheme(
             specialKey = Color(0xFFABB2BC),
             pressedKey = Color(0xFFE6E6E6), // white darkened 10%
             pressedSpecialKey = Color(0xFF9AA0A9),
+            accent = Color(0xFF07C160), // WeChat green
+            pressedAccent = Color(0xFF06AE56),
             text = Color(0xFF000000),
+            textOnAccent = Color(0xFFFFFFFF),
             separator = Color(0x668A8F98), // 40% alpha
         )
         val Dark = KeyboardTheme(
@@ -31,7 +37,10 @@ data class KeyboardTheme(
             specialKey = Color(0xFF2F3238),
             pressedKey = Color(0xFF42444B),
             pressedSpecialKey = Color(0xFF2A2D32),
+            accent = Color(0xFF07C160),
+            pressedAccent = Color(0xFF06AE56),
             text = Color(0xFFFFFFFF),
+            textOnAccent = Color(0xFFFFFFFF),
             separator = Color(0x4D8A8F98), // 30% alpha
         )
     }

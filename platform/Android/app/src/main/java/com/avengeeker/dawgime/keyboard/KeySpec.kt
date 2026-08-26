@@ -2,14 +2,19 @@
 package com.avengeeker.dawgime.keyboard
 
 /**
- * Apple-keyboard-spec metrics and pure layout math. The same numbers and
- * formulas are duplicated verbatim in KeySpec.swift (iOS) and
- * KeyboardPanel.ets (HarmonyOS); keep all three in sync. Units: dp.
+ * WeChat-style keyboard metrics and pure layout math. The same numbers and
+ * formulas are duplicated verbatim in KeySpec.swift (iOS) and KeySpec.ets
+ * (HarmonyOS); keep all three in sync. Units: dp.
+ *
+ * Layout: 44dp top bar (toolbar when idle, candidate bar while composing),
+ * four key rows with uppercase letter caps, and a five-key bottom row
+ * [123/ABC] [comma] [space] [CN/EN] [action].
  */
 enum class KeyboardPage { LETTERS, SYMBOLS1, SYMBOLS2 }
 
 enum class KeyKind {
-    CHAR, SHIFT, BACKSPACE, SPACE, RETURN, TO_SYMBOLS1, TO_SYMBOLS2, TO_LETTERS,
+    CHAR, SHIFT, BACKSPACE, SPACE, RETURN, TO_SYMBOLS1, TO_SYMBOLS2,
+    TO_LETTERS, COMMA, LANG_TOGGLE, ACTION,
 }
 
 data class KeyFrame(
@@ -23,7 +28,7 @@ data class KeyFrame(
 )
 
 object KeyMetrics {
-    const val CANDIDATE_BAR_HEIGHT = 44f
+    const val TOP_BAR_HEIGHT = 44f
     const val TOP_PADDING = 8f
     const val KEY_HEIGHT = 42f
     const val ROW_GAP = 12f
@@ -35,7 +40,7 @@ object KeyMetrics {
     const val SPECIAL_FONT_SIZE = 20f
     const val CANDIDATE_FONT_SIZE = 16f
     const val CANDIDATE_PADDING = 14f
-    const val SEPARATOR_HEIGHT = 20f
+    const val TOOLBAR_BUTTON_SIZE = 34f
     const val MAX_BUFFER_LEN = 64
     const val CONTEXT_CHARS = 8
 }
@@ -52,18 +57,28 @@ object KeyLayout {
             8 * KeyMetrics.H_GAP) / 2
     }
 
-    /** Letter-area height below the candidate bar. */
+    /**
+     * Bottom-row widths [num, comma, space, lang, action] as
+     * unit x [2, 1, 4.2, 1, 2.5] with unit = (W - 2x3 - 4x6) / 10.7.
+     */
+    fun bottomWidths(totalWidth: Float): List<Float> {
+        val unit = (totalWidth - 2 * KeyMetrics.EDGE_INSET -
+            4 * KeyMetrics.H_GAP) / 10.7f
+        return listOf(2 * unit, unit, 4.2f * unit, unit, 2.5f * unit)
+    }
+
+    /** Letter-area height below the top bar. */
     fun rowsHeight(): Float = KeyMetrics.TOP_PADDING + 4 * KeyMetrics.KEY_HEIGHT +
         3 * KeyMetrics.ROW_GAP + KeyMetrics.BOTTOM_PADDING
 
     fun totalHeight(totalWidth: Float): Float =
-        KeyMetrics.CANDIDATE_BAR_HEIGHT + rowsHeight()
+        KeyMetrics.TOP_BAR_HEIGHT + rowsHeight()
 
     fun compute(width: Float, page: KeyboardPage): List<KeyFrame> {
         val keyW = keyWidth(width)
         val ws = specialWidth(width)
         val frames = mutableListOf<KeyFrame>()
-        val y0 = KeyMetrics.CANDIDATE_BAR_HEIGHT + KeyMetrics.TOP_PADDING
+        val y0 = KeyMetrics.TOP_BAR_HEIGHT + KeyMetrics.TOP_PADDING
         val dy = KeyMetrics.KEY_HEIGHT + KeyMetrics.ROW_GAP
         val row2X0 = KeyMetrics.EDGE_INSET + (keyW + KeyMetrics.H_GAP) / 2
 
@@ -82,24 +97,29 @@ object KeyLayout {
         }
 
         fun bottomRow(leftKind: KeyKind, leftLabel: String, y: Float) {
-            val spaceW = width - 2 * KeyMetrics.EDGE_INSET - 2 * ws -
-                2 * KeyMetrics.H_GAP
+            val bw = bottomWidths(width)
             addRow(
                 listOf(
-                    Triple(leftKind, leftLabel, ws),
-                    Triple(KeyKind.SPACE, "空格", spaceW),
-                    Triple(KeyKind.RETURN, "⏎", ws),
+                    Triple(leftKind, leftLabel, bw[0]),
+                    Triple(KeyKind.COMMA, "", bw[1]),
+                    Triple(KeyKind.SPACE, "", bw[2]),
+                    Triple(KeyKind.LANG_TOGGLE, "", bw[3]),
+                    Triple(KeyKind.ACTION, "", bw[4]),
                 ),
                 KeyMetrics.EDGE_INSET, y,
-            ) { it != KeyKind.CHAR }
+            ) { it == leftKind || it == KeyKind.ACTION }
         }
 
         when (page) {
             KeyboardPage.LETTERS -> {
-                charRow("qwertyuiop".map { it.toString() }, KeyMetrics.EDGE_INSET, y0)
-                charRow("asdfghjkl".map { it.toString() }, row2X0, y0 + dy)
+                charRow(listOf("Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"),
+                    KeyMetrics.EDGE_INSET, y0)
+                charRow(listOf("A", "S", "D", "F", "G", "H", "J", "K", "L"),
+                    row2X0, y0 + dy)
                 val row3 = mutableListOf(Triple(KeyKind.SHIFT, "⇧", ws))
-                row3 += "zxcvbnm".map { Triple(KeyKind.CHAR, it.toString(), keyW) }
+                row3 += listOf("Z", "X", "C", "V", "B", "N", "M").map {
+                    Triple(KeyKind.CHAR, it, keyW)
+                }
                 row3 += Triple(KeyKind.BACKSPACE, "⌫", ws)
                 addRow(row3, KeyMetrics.EDGE_INSET, y0 + 2 * dy) { it != KeyKind.CHAR }
                 bottomRow(KeyKind.TO_SYMBOLS1, "123", y0 + 3 * dy)

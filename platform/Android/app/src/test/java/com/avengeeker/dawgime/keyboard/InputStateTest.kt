@@ -12,6 +12,10 @@ class InputStateTest {
         val inserted = StringBuilder()
         var backwardCount = 0
         var returnCount = 0
+        var editorActionCount = 0
+        var hideCount = 0
+        var switchCount = 0
+        var composing = ""
         var externalContext = ""
 
         override fun insertText(text: String) {
@@ -27,6 +31,24 @@ class InputStateTest {
         }
 
         override fun contextBeforeInput(): String = externalContext
+
+        override fun setComposingText(text: String) {
+            composing = text
+        }
+
+        override fun editorActionLabel(): String = "搜索"
+
+        override fun performEditorAction() {
+            editorActionCount++
+        }
+
+        override fun hideKeyboard() {
+            hideCount++
+        }
+
+        override fun switchToNextKeyboard() {
+            switchCount++
+        }
     }
 
     private fun frame(kind: KeyKind, label: String = "") =
@@ -54,6 +76,16 @@ class InputStateTest {
         assertEquals("zhong", session.buffer)
         assertEquals(listOf("中国", "中"), session.candidates)
         assertEquals("", sink.inserted.toString())
+    }
+
+    @Test
+    fun composingTextMirrorsBufferAndClearsOnCommit() {
+        val sink = FakeSink()
+        val session = sessionWith(sink)
+        "zhong".forEach { session.tap(letter(it.toString())) }
+        assertEquals("zhong", sink.composing)
+        session.tap(frame(KeyKind.SPACE))
+        assertEquals("", sink.composing)
     }
 
     @Test
@@ -86,34 +118,97 @@ class InputStateTest {
     }
 
     @Test
-    fun backspacePopsBufferFirstThenDelegates() {
+    fun backspaceEditsBufferBeforeHost() {
         val sink = FakeSink()
         val session = sessionWith(sink)
         session.tap(letter("a"))
         session.tap(letter("b"))
-        session.tap(frame(KeyKind.BACKSPACE, "⌫"))
+        session.tap(frame(KeyKind.BACKSPACE))
         assertEquals("a", session.buffer)
         assertEquals(0, sink.backwardCount)
-        session.tap(frame(KeyKind.BACKSPACE, "⌫"))
-        assertEquals("", session.buffer)
-        session.tap(frame(KeyKind.BACKSPACE, "⌫"))
+        session.tap(frame(KeyKind.BACKSPACE))
+        session.tap(frame(KeyKind.BACKSPACE))
         assertEquals(1, sink.backwardCount)
     }
 
     @Test
-    fun returnCommitsRawBufferWithoutNewline() {
+    fun returnKeyCommitsRawBuffer() {
         val sink = FakeSink()
         val session = sessionWith(sink)
-        "abc".forEach { session.tap(letter(it.toString())) }
-        session.tap(frame(KeyKind.RETURN, "⏎"))
-        assertEquals("abc", sink.inserted.toString())
+        "zhong".forEach { session.tap(letter(it.toString())) }
+        session.tap(frame(KeyKind.RETURN))
+        assertEquals("zhong", sink.inserted.toString())
         assertEquals(0, sink.returnCount)
-        session.tap(frame(KeyKind.RETURN, "⏎"))
-        assertEquals(1, sink.returnCount)
     }
 
     @Test
-    fun shiftIsOneShot() {
+    fun actionKeyCommitsRawBufferWhenComposing() {
+        val sink = FakeSink()
+        val session = sessionWith(sink)
+        "mdj".forEach { session.tap(letter(it.toString())) }
+        session.tap(frame(KeyKind.ACTION))
+        assertEquals("mdj", sink.inserted.toString())
+        assertEquals(0, sink.editorActionCount)
+    }
+
+    @Test
+    fun actionKeyPerformsEditorActionWhenIdle() {
+        val sink = FakeSink()
+        val session = sessionWith(sink)
+        session.tap(frame(KeyKind.ACTION))
+        assertEquals(1, sink.editorActionCount)
+        assertEquals("", sink.inserted.toString())
+        assertEquals("搜索", session.actionLabel())
+    }
+
+    @Test
+    fun commaKeyInsertsModeDependentComma() {
+        val sink = FakeSink()
+        val session = sessionWith(sink)
+        session.tap(frame(KeyKind.COMMA))
+        assertEquals("，", sink.inserted.toString())
+        session.tap(frame(KeyKind.LANG_TOGGLE))
+        session.tap(frame(KeyKind.COMMA))
+        assertEquals("，,", sink.inserted.toString())
+    }
+
+    @Test
+    fun englishModeLettersInsertDirectly() {
+        val sink = FakeSink()
+        val session = sessionWith(sink)
+        session.tap(frame(KeyKind.LANG_TOGGLE))
+        assertFalse(session.chineseMode)
+        session.tap(letter("a"))
+        session.tap(letter("b"))
+        assertEquals("ab", sink.inserted.toString())
+        assertEquals("", session.buffer)
+        assertTrue(session.candidates.isEmpty())
+    }
+
+    @Test
+    fun englishModeShiftUpperCasesNextLetterOnly() {
+        val sink = FakeSink()
+        val session = sessionWith(sink)
+        session.tap(frame(KeyKind.LANG_TOGGLE))
+        session.tap(frame(KeyKind.SHIFT))
+        session.tap(letter("a"))
+        session.tap(letter("b"))
+        assertEquals("Ab", sink.inserted.toString())
+    }
+
+    @Test
+    fun langToggleCommitsPendingBufferFirst() {
+        val sink = FakeSink()
+        val session = sessionWith(sink)
+        "zhong".forEach { session.tap(letter(it.toString())) }
+        session.tap(frame(KeyKind.LANG_TOGGLE))
+        assertEquals("中国", sink.inserted.toString())
+        assertFalse(session.chineseMode)
+        assertEquals("", session.buffer)
+    }
+
+    @Test
+    fun shiftUpperCasesNextLetterOnlyInChineseMode() {
         val sink = FakeSink()
         val session = sessionWith(sink)
         session.tap(frame(KeyKind.SHIFT, "⇧"))
@@ -132,6 +227,16 @@ class InputStateTest {
         session.tap(frame(KeyKind.CHAR, "?"))
         assertEquals("?", sink.inserted.toString())
         assertEquals("", session.buffer)
+    }
+
+    @Test
+    fun toolbarButtonsReachSink() {
+        val sink = FakeSink()
+        val session = sessionWith(sink)
+        session.hideKeyboard()
+        session.switchToNextKeyboard()
+        assertEquals(1, sink.hideCount)
+        assertEquals(1, sink.switchCount)
     }
 
     @Test
