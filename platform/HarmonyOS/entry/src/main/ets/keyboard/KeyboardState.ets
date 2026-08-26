@@ -7,17 +7,26 @@ export interface TextSink {
   insertText(text: string): void;
   deleteBackward(): void;
   sendReturn(): void;
+  /** Mirrors the pinyin buffer into the host as composing/raw text. */
+  setComposingText(text: string): void;
+  /** Localized editor-action label shown on the idle action key. */
+  editorActionLabel(): string;
+  performEditorAction(): void;
+  hideKeyboard(): void;
+  switchKeyboard(): void;
 }
 
 /**
- * Platform-agnostic input state machine. Mirrors KeyboardModel.swift (iOS)
- * and ImeSession.kt (Android); keep behaviors aligned.
+ * Platform-agnostic input state machine (WeChat-style behaviors). Mirrors
+ * KeyboardModel.swift (iOS) and ImeSession.kt (Android); keep behaviors
+ * aligned.
  */
 export class KeyboardState {
   page: KeyboardPage = KeyboardPage.LETTERS;
   buffer: string = '';
   candidates: string[] = [];
   shiftOn: boolean = false;
+  chineseMode: boolean = true;
   engineReady: boolean;
   /**
    * API 9's InputClient cannot supply preceding text, so context is tracked
@@ -32,12 +41,43 @@ export class KeyboardState {
     this.engineReady = DawgEngineBridge.isReady();
   }
 
+  isComposing(): boolean {
+    return this.buffer.length > 0;
+  }
+
+  actionLabel(): string {
+    return this.sink.editorActionLabel();
+  }
+
+  hideKeyboard(): void {
+    this.sink.hideKeyboard();
+  }
+
+  switchKeyboard(): void {
+    this.sink.switchKeyboard();
+  }
+
   tap(frame: KeyFrame): void {
     if (frame.kind === KeyKind.CHAR) {
-      if (this.page === KeyboardPage.LETTERS) {
+      if (this.page !== KeyboardPage.LETTERS) {
+        this.commit(frame.label); // symbols insert directly
+      } else if (this.chineseMode) {
         this.appendLetter(frame.label);
       } else {
-        this.commit(frame.label); // symbols insert directly
+        // English mode: direct insert, one-shot shift.
+        this.commit(this.shiftOn ? frame.label.toUpperCase()
+                                 : frame.label.toLowerCase());
+        this.shiftOn = false;
+      }
+    } else if (frame.kind === KeyKind.COMMA) {
+      this.commit(this.chineseMode ? '，' : ',');
+    } else if (frame.kind === KeyKind.LANG_TOGGLE) {
+      this.toggleLanguage();
+    } else if (frame.kind === KeyKind.ACTION) {
+      if (this.buffer.length > 0) {
+        this.commit(this.buffer); // 确定: commit raw letters
+      } else {
+        this.sink.performEditorAction();
       }
     } else if (frame.kind === KeyKind.SHIFT) {
       if (this.page === KeyboardPage.LETTERS) {
@@ -77,6 +117,15 @@ export class KeyboardState {
     this.commit(text);
   }
 
+  private toggleLanguage(): void {
+    // Committing the pending buffer first matches WeChat behavior.
+    if (this.buffer.length > 0) {
+      this.commit(this.candidates.length > 0 ? this.candidates[0]
+                                             : this.buffer);
+    }
+    this.chineseMode = !this.chineseMode;
+  }
+
   private appendLetter(letter: string): void {
     if (this.buffer.length >= KeyMetrics.MAX_BUFFER_LEN) {
       return;
@@ -92,6 +141,7 @@ export class KeyboardState {
     if (text.length === 0) {
       return;
     }
+    this.sink.setComposingText('');
     this.sink.insertText(text);
     this.buffer = '';
     this.candidates = [];
@@ -111,5 +161,6 @@ export class KeyboardState {
     } else {
       this.candidates = [];
     }
+    this.sink.setComposingText(this.buffer);
   }
 }

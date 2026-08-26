@@ -3,6 +3,15 @@ import inputMethodEngine from '@ohos.inputMethodEngine';
 import { TextSink } from './KeyboardState';
 
 /**
+ * Newer SDKs expose InputClient.setRawText() for composing (pre-commit)
+ * text; API 9/10 do not. The double assertion keeps this source compilable
+ * against any SDK level; at runtime the call is best-effort.
+ */
+interface RawTextCapable {
+  setRawText(text: string): void;
+}
+
+/**
  * Adapts the framework InputClient to the state machine's TextSink.
  * NOTE (API 9): InputClient exposes no way to read the text before the
  * cursor, so KeyboardState tracks committed context internally only.
@@ -32,6 +41,35 @@ export class InputBridge {
       if (client !== null) {
         client.sendKeyFunction(0); // ENTER_KEY_TYPE_UNSPECIFIED
       }
+    },
+    setComposingText(text: string): void {
+      const client = InputBridge.client;
+      if (client === null) {
+        return;
+      }
+      try {
+        const raw = client as Object as RawTextCapable;
+        raw.setRawText(text);
+      } catch (err) {
+        // SDK without setRawText: composing preview unavailable.
+      }
+    },
+    editorActionLabel(): string {
+      // API 9 supplies no enter-key type to the IME.
+      return '换行';
+    },
+    performEditorAction(): void {
+      const client = InputBridge.client;
+      if (client !== null) {
+        client.sendKeyFunction(0);
+      }
+    },
+    hideKeyboard(): void {
+      // API 9 offers no extension-side hide API; the panel follows the
+      // system keyboard lifecycle instead.
+    },
+    switchKeyboard(): void {
+      // API 9 offers no extension-side IME switch API.
     },
   };
 }

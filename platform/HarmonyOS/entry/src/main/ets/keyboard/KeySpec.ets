@@ -1,7 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
-// Apple-keyboard-spec metrics and pure layout math. The same numbers and
+// WeChat-style keyboard metrics and pure layout math. The same numbers and
 // formulas are duplicated verbatim in KeySpec.swift (iOS) and KeySpec.kt
 // (Android); keep all three in sync. Units: vp.
+//
+// Layout: 44vp top bar (toolbar when idle, candidate bar while composing),
+// four key rows with uppercase letter caps, and a five-key bottom row
+// [123/ABC] [comma] [space] [CN/EN] [action].
 
 export enum KeyboardPage {
   LETTERS,
@@ -18,6 +22,9 @@ export enum KeyKind {
   TO_SYMBOLS1,
   TO_SYMBOLS2,
   TO_LETTERS,
+  COMMA,
+  LANG_TOGGLE,
+  ACTION,
 }
 
 export interface KeyFrame {
@@ -31,7 +38,7 @@ export interface KeyFrame {
 }
 
 export class KeyMetrics {
-  static readonly CANDIDATE_BAR_HEIGHT: number = 44;
+  static readonly TOP_BAR_HEIGHT: number = 44;
   static readonly TOP_PADDING: number = 8;
   static readonly KEY_HEIGHT: number = 42;
   static readonly ROW_GAP: number = 12;
@@ -43,7 +50,7 @@ export class KeyMetrics {
   static readonly SPECIAL_FONT_SIZE: number = 20;
   static readonly CANDIDATE_FONT_SIZE: number = 16;
   static readonly CANDIDATE_PADDING: number = 14;
-  static readonly SEPARATOR_HEIGHT: number = 20;
+  static readonly TOOLBAR_BUTTON_SIZE: number = 34;
   static readonly MAX_BUFFER_LEN: number = 64;
   static readonly CONTEXT_CHARS: number = 8;
 }
@@ -61,59 +68,72 @@ export class KeyLayout {
       8 * KeyMetrics.H_GAP) / 2;
   }
 
-  /** Letter-area height below the candidate bar. */
+  /**
+   * Bottom-row widths [num, comma, space, lang, action] as
+   * unit x [2, 1, 4.2, 1, 2.5] with unit = (W - 2x3 - 4x6) / 10.7.
+   */
+  static bottomWidths(totalWidth: number): number[] {
+    const unit = (totalWidth - 2 * KeyMetrics.EDGE_INSET -
+      4 * KeyMetrics.H_GAP) / 10.7;
+    return [2 * unit, unit, 4.2 * unit, unit, 2.5 * unit];
+  }
+
+  /** Letter-area height below the top bar. */
   static rowsHeight(): number {
     return KeyMetrics.TOP_PADDING + 4 * KeyMetrics.KEY_HEIGHT +
       3 * KeyMetrics.ROW_GAP + KeyMetrics.BOTTOM_PADDING;
   }
 
   static totalHeight(): number {
-    return KeyMetrics.CANDIDATE_BAR_HEIGHT + KeyLayout.rowsHeight();
+    return KeyMetrics.TOP_BAR_HEIGHT + KeyLayout.rowsHeight();
   }
 
   static compute(width: number, page: KeyboardPage): KeyFrame[] {
     const keyW = KeyLayout.keyWidth(width);
     const ws = KeyLayout.specialWidth(width);
     const frames: KeyFrame[] = [];
-    const y0 = KeyMetrics.CANDIDATE_BAR_HEIGHT + KeyMetrics.TOP_PADDING;
+    const y0 = KeyMetrics.TOP_BAR_HEIGHT + KeyMetrics.TOP_PADDING;
     const dy = KeyMetrics.KEY_HEIGHT + KeyMetrics.ROW_GAP;
     const row2X0 = KeyMetrics.EDGE_INSET + (keyW + KeyMetrics.H_GAP) / 2;
 
-    const addRow = (entries: Array<[KeyKind, string, number]>, x0: number,
-                    y: number): void => {
+    const addRow = (entries: Array<[KeyKind, string, number, boolean]>,
+                    x0: number, y: number): void => {
       let x = x0;
       for (const entry of entries) {
         frames.push({
           kind: entry[0], label: entry[1], x: x, y: y,
           width: entry[2], height: KeyMetrics.KEY_HEIGHT,
-          isSpecial: entry[0] !== KeyKind.CHAR,
+          isSpecial: entry[3],
         });
         x += entry[2] + KeyMetrics.H_GAP;
       }
     };
     const charRow = (chars: string[], x0: number, y: number): void => {
-      addRow(chars.map((c): [KeyKind, string, number] =>
-        [KeyKind.CHAR, c, keyW]), x0, y);
+      addRow(chars.map((c): [KeyKind, string, number, boolean] =>
+        [KeyKind.CHAR, c, keyW, false]), x0, y);
     };
-    const bottomRow = (leftKind: KeyKind, leftLabel: string, y: number): void => {
-      const spaceW = width - 2 * KeyMetrics.EDGE_INSET - 2 * ws -
-        2 * KeyMetrics.H_GAP;
+    const bottomRow = (leftKind: KeyKind, leftLabel: string,
+                       y: number): void => {
+      const bw = KeyLayout.bottomWidths(width);
       addRow([
-        [leftKind, leftLabel, ws],
-        [KeyKind.SPACE, '空格', spaceW],
-        [KeyKind.RETURN, '⏎', ws],
+        [leftKind, leftLabel, bw[0], true],
+        [KeyKind.COMMA, '', bw[1], false],
+        [KeyKind.SPACE, '', bw[2], false],
+        [KeyKind.LANG_TOGGLE, '', bw[3], false],
+        [KeyKind.ACTION, '', bw[4], true],
       ], KeyMetrics.EDGE_INSET, y);
     };
 
     if (page === KeyboardPage.LETTERS) {
-      charRow(['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
+      charRow(['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
         KeyMetrics.EDGE_INSET, y0);
-      charRow(['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'], row2X0, y0 + dy);
-      const row3: Array<[KeyKind, string, number]> = [[KeyKind.SHIFT, '⇧', ws]];
-      for (const c of ['z', 'x', 'c', 'v', 'b', 'n', 'm']) {
-        row3.push([KeyKind.CHAR, c, keyW]);
+      charRow(['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'], row2X0, y0 + dy);
+      const row3: Array<[KeyKind, string, number, boolean]> =
+        [[KeyKind.SHIFT, '⇧', ws, true]];
+      for (const c of ['Z', 'X', 'C', 'V', 'B', 'N', 'M']) {
+        row3.push([KeyKind.CHAR, c, keyW, false]);
       }
-      row3.push([KeyKind.BACKSPACE, '⌫', ws]);
+      row3.push([KeyKind.BACKSPACE, '⌫', ws, true]);
       addRow(row3, KeyMetrics.EDGE_INSET, y0 + 2 * dy);
       bottomRow(KeyKind.TO_SYMBOLS1, '123', y0 + 3 * dy);
     } else if (page === KeyboardPage.SYMBOLS1) {
@@ -121,12 +141,12 @@ export class KeyLayout {
         KeyMetrics.EDGE_INSET, y0);
       charRow(['-', '/', ':', ';', '(', ')', '¥', '&', '@', '"'],
         KeyMetrics.EDGE_INSET, y0 + dy);
-      const row3: Array<[KeyKind, string, number]> =
-        [[KeyKind.TO_SYMBOLS2, '#+=', ws]];
+      const row3: Array<[KeyKind, string, number, boolean]> =
+        [[KeyKind.TO_SYMBOLS2, '#+=', ws, true]];
       for (const c of ['.', ',', '?', '!', "'"]) {
-        row3.push([KeyKind.CHAR, c, keyW]);
+        row3.push([KeyKind.CHAR, c, keyW, false]);
       }
-      row3.push([KeyKind.BACKSPACE, '⌫', ws]);
+      row3.push([KeyKind.BACKSPACE, '⌫', ws, true]);
       addRow(row3, KeyMetrics.EDGE_INSET, y0 + 2 * dy);
       bottomRow(KeyKind.TO_LETTERS, 'ABC', y0 + 3 * dy);
     } else {
@@ -134,12 +154,12 @@ export class KeyLayout {
         KeyMetrics.EDGE_INSET, y0);
       charRow(['_', '\\', '|', '~', '<', '>', '€', '£', '$', '¥'],
         KeyMetrics.EDGE_INSET, y0 + dy);
-      const row3: Array<[KeyKind, string, number]> =
-        [[KeyKind.TO_SYMBOLS1, '123', ws]];
+      const row3: Array<[KeyKind, string, number, boolean]> =
+        [[KeyKind.TO_SYMBOLS1, '123', ws, true]];
       for (const c of ['.', ',', '?', '!', "'"]) {
-        row3.push([KeyKind.CHAR, c, keyW]);
+        row3.push([KeyKind.CHAR, c, keyW, false]);
       }
-      row3.push([KeyKind.BACKSPACE, '⌫', ws]);
+      row3.push([KeyKind.BACKSPACE, '⌫', ws, true]);
       addRow(row3, KeyMetrics.EDGE_INSET, y0 + 2 * dy);
       bottomRow(KeyKind.TO_LETTERS, 'ABC', y0 + 3 * dy);
     }
