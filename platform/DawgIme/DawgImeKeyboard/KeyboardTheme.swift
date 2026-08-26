@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Exact palette from the shared three-platform keyboard spec.
+// WeChat-style palette shared by the three platform keyboards.
 
 import SwiftUI
 
@@ -9,7 +9,10 @@ struct KeyboardTheme {
   let specialKey: Color
   let pressedKey: Color
   let pressedSpecialKey: Color
+  let accent: Color
+  let pressedAccent: Color
   let text: Color
+  let textOnAccent: Color
   let separator: Color
 
   static func palette(for scheme: ColorScheme) -> KeyboardTheme {
@@ -17,24 +20,32 @@ struct KeyboardTheme {
     case .dark:
       let key = Color(hex: 0x494B53)
       let special = Color(hex: 0x2F3238)
+      let accent = Color(hex: 0x07C160)  // WeChat green
       return KeyboardTheme(
         background: Color(hex: 0x1C1C1E),
         key: key,
         specialKey: special,
         pressedKey: key.darkened(0.10),
         pressedSpecialKey: special.darkened(0.10),
+        accent: accent,
+        pressedAccent: accent.darkened(0.10),
         text: .white,
+        textOnAccent: .white,
         separator: Color(hex: 0x8A8F98).opacity(0.3))
     default:
       let key = Color(hex: 0xFFFFFF)
       let special = Color(hex: 0xABB2BC)
+      let accent = Color(hex: 0x07C160)  // WeChat green
       return KeyboardTheme(
         background: Color(hex: 0xD1D5DB),
         key: key,
         specialKey: special,
         pressedKey: key.darkened(0.10),
         pressedSpecialKey: special.darkened(0.10),
+        accent: accent,
+        pressedAccent: accent.darkened(0.10),
         text: .black,
+        textOnAccent: .white,
         separator: Color(hex: 0x8A8F98).opacity(0.4))
     }
   }

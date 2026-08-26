@@ -39,7 +39,7 @@ final class KeyboardViewController: UIInputViewController, KeyboardHost {
     updateHeight()
   }
 
-  /// Portrait-only: pin the extension view to candidate bar + 4 key rows
+  /// Portrait-only: pin the extension view to top bar + 4 key rows
   /// + bottom padding + home-indicator safe area.
   private func updateHeight() {
     let width = view.bounds.width > 0
@@ -68,7 +68,42 @@ final class KeyboardViewController: UIInputViewController, KeyboardHost {
     textDocumentProxy.insertText("\n")
   }
 
-  func contextBeforeInput() -> String {
+  func contextPrecedingInput() -> String {
     textDocumentProxy.documentContextBeforeInput ?? ""
+  }
+
+  func setComposingText(_ text: String) {
+    if text.isEmpty {
+      textDocumentProxy.setMarkedText("", selectedRange: NSMakeRange(0, 0))
+    } else {
+      let len = (text as NSString).length
+      textDocumentProxy.setMarkedText(text,
+                                      selectedRange: NSMakeRange(len, 0))
+    }
+  }
+
+  func editorActionLabel() -> String {
+    switch textDocumentProxy.returnKeyType {
+    case .search: return "搜索"
+    case .go: return "前往"
+    case .send: return "发送"
+    case .done: return "完成"
+    case .next: return "下一步"
+    case .join: return "加入"
+    case .continue: return "继续"
+    default: return "换行"
+    }
+  }
+
+  func performEditorAction() {
+    textDocumentProxy.insertText("\n")
+  }
+
+  func hideKeyboard() {
+    dismissKeyboard()
+  }
+
+  func switchToNextKeyboard() {
+    advanceToNextInputMode()
   }
 }

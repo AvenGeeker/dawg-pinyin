@@ -1,7 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
-// Apple-keyboard-spec metrics and pure layout math. The same numbers and
-// formulas are duplicated verbatim on Android (KeyLayout.kt) and HarmonyOS
-// (KeyboardPanel.ets); keep all three in sync.
+// WeChat-style keyboard metrics and pure layout math. The same numbers and
+// formulas are duplicated verbatim on Android (KeySpec.kt) and HarmonyOS
+// (KeySpec.ets); keep all three in sync.
+//
+// Layout: 44pt top bar (toolbar when idle, candidate bar while composing),
+// four key rows with uppercase letter caps, and a five-key bottom row
+// [123/ABC] [comma] [space] [CN/EN] [action].
 
 import CoreGraphics
 
@@ -20,6 +24,9 @@ enum KeyKind: Equatable {
   case toSymbols1
   case toSymbols2
   case toLetters
+  case comma
+  case langToggle
+  case action
 }
 
 struct KeyCap: Identifiable {
@@ -31,7 +38,7 @@ struct KeyCap: Identifiable {
 }
 
 enum KeyMetrics {
-  static let candidateBarHeight: CGFloat = 44
+  static let topBarHeight: CGFloat = 44
   static let topPadding: CGFloat = 8
   static let keyHeight: CGFloat = 42
   static let rowGap: CGFloat = 12
@@ -43,7 +50,7 @@ enum KeyMetrics {
   static let specialFontSize: CGFloat = 20
   static let candidateFontSize: CGFloat = 16
   static let candidatePadding: CGFloat = 14
-  static let separatorHeight: CGFloat = 20
+  static let toolbarButtonSize: CGFloat = 34
   static let maxBufferLen = 64
   static let contextChars = 8
 }
@@ -61,7 +68,15 @@ enum KeyLayout {
             - 8 * KeyMetrics.hGap) / 2
   }
 
-  /// Letter-area height below the candidate bar.
+  /// Bottom-row widths [num, comma, space, lang, action] as
+  /// unit × [2, 1, 4.2, 1, 2.5] with unit = (W − 2×3 − 4×6) / 10.7.
+  static func bottomWidths(totalWidth: CGFloat) -> [CGFloat] {
+    let unit = (totalWidth - 2 * KeyMetrics.edgeInset
+                - 4 * KeyMetrics.hGap) / 10.7
+    return [2 * unit, unit, 4.2 * unit, unit, 2.5 * unit]
+  }
+
+  /// Letter-area height below the top bar.
   static func rowsHeight() -> CGFloat {
     KeyMetrics.topPadding + 4 * KeyMetrics.keyHeight
       + 3 * KeyMetrics.rowGap + KeyMetrics.bottomPadding
@@ -69,7 +84,7 @@ enum KeyLayout {
 
   static func totalHeight(totalWidth: CGFloat) -> CGFloat {
     _ = totalWidth  // height is width-independent in portrait
-    return KeyMetrics.candidateBarHeight + rowsHeight()
+    return KeyMetrics.topBarHeight + rowsHeight()
   }
 
   static func compute(width: CGFloat, page: KeyboardPage) -> [KeyCap] {
@@ -96,24 +111,27 @@ enum KeyLayout {
     }
 
     func bottomRow(_ leftKind: KeyKind, _ leftLabel: String, y: CGFloat) {
-      let spaceW = width - 2 * KeyMetrics.edgeInset - 2 * ws
-        - 2 * KeyMetrics.hGap
+      let bw = bottomWidths(totalWidth: width)
       addRow([
-        (leftKind, leftLabel, ws, true),
-        (.space, "空格", spaceW, true),
-        (.returnKey, "⏎", ws, true),
+        (leftKind, leftLabel, bw[0], true),
+        (.comma, "", bw[1], false),
+        (.space, "", bw[2], false),
+        (.langToggle, "", bw[3], false),
+        (.action, "", bw[4], true),
       ], x0: KeyMetrics.edgeInset, y: y)
     }
 
-    let y0 = KeyMetrics.candidateBarHeight + KeyMetrics.topPadding
+    let y0 = KeyMetrics.topBarHeight + KeyMetrics.topPadding
     let dy = KeyMetrics.keyHeight + KeyMetrics.rowGap
     let row2X0 = KeyMetrics.edgeInset + (keyW + KeyMetrics.hGap) / 2
 
     switch page {
     case .letters:
-      charRow("qwertyuiop".map(String.init), x0: KeyMetrics.edgeInset, y: y0)
-      charRow("asdfghjkl".map(String.init), x0: row2X0, y: y0 + dy)
-      let letters3 = "zxcvbnm".map(String.init)
+      charRow(["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
+              x0: KeyMetrics.edgeInset, y: y0)
+      charRow(["A", "S", "D", "F", "G", "H", "J", "K", "L"],
+              x0: row2X0, y: y0 + dy)
+      let letters3 = ["Z", "X", "C", "V", "B", "N", "M"]
       var row3: [(KeyKind, String, CGFloat, Bool)] = [(.shift, "⇧", ws, true)]
       row3 += letters3.map { (.char($0), $0, keyW, false) }
       row3.append((.backspace, "⌫", ws, true))

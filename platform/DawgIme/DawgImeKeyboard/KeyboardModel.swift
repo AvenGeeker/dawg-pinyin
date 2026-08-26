@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
-// Platform-agnostic input state machine. Mirrors ImeSession.kt (Android)
-// and the ArkTS session in DawgIME.ets (HarmonyOS); keep behaviors aligned.
+// Platform-agnostic input state machine (WeChat-style behaviors). Mirrors
+// ImeSession.kt (Android) and KeyboardState.ets (HarmonyOS); keep behaviors
+// aligned.
 
 import Foundation
 import Observation
@@ -10,7 +11,14 @@ protocol KeyboardHost: AnyObject {
   func insertText(_ text: String)
   func deleteBackward()
   func sendReturn()
-  func contextBeforeInput() -> String
+  func contextPrecedingInput() -> String
+  /// Mirrors the pinyin buffer into the host as marked text.
+  func setComposingText(_ text: String)
+  /// Localized editor-action label shown on the idle action key.
+  func editorActionLabel() -> String
+  func performEditorAction()
+  func hideKeyboard()
+  func switchToNextKeyboard()
 }
 
 @Observable
@@ -19,6 +27,7 @@ final class KeyboardModel {
   private(set) var buffer = ""
   private(set) var candidates: [String] = []
   private(set) var shiftOn = false
+  private(set) var chineseMode = true
   private(set) var engineReady = false
   /// Fallback context when the platform cannot supply preceding text
   /// (HarmonyOS API 9); on iOS the host context wins.
@@ -37,8 +46,14 @@ final class KeyboardModel {
     self.host = host
   }
 
+  var isComposing: Bool { !buffer.isEmpty }
+
+  func actionLabel() -> String {
+    host?.editorActionLabel() ?? "换行"
+  }
+
   private var context: String {
-    let source = host?.contextBeforeInput() ?? committedContext
+    let source = host?.contextPrecedingInput() ?? committedContext
     return String(source.suffix(KeyMetrics.contextChars))
   }
 
@@ -47,10 +62,24 @@ final class KeyboardModel {
   func tap(_ cap: KeyCap) {
     switch cap.kind {
     case .char(let text):
-      if page == .letters {
+      if page != .letters {
+        commit(text)  // symbols insert directly, no composition
+      } else if chineseMode {
         appendLetter(text)
       } else {
-        commit(text)  // symbols insert directly, no composition
+        // English mode: direct insert, one-shot shift.
+        commit(shiftOn ? text.uppercased() : text.lowercased())
+        shiftOn = false
+      }
+    case .comma:
+      commit(chineseMode ? "，" : ",")
+    case .langToggle:
+      toggleLanguage()
+    case .action:
+      if !buffer.isEmpty {
+        commit(buffer)  // 确定: commit raw letters
+      } else {
+        host?.performEditorAction()
       }
     case .shift:
       guard page == .letters else { return }
@@ -88,7 +117,23 @@ final class KeyboardModel {
     commit(text)
   }
 
+  func hideKeyboard() {
+    host?.hideKeyboard()
+  }
+
+  func switchToNextKeyboard() {
+    host?.switchToNextKeyboard()
+  }
+
   // MARK: - Internals
+
+  private func toggleLanguage() {
+    // Committing the pending buffer first matches WeChat behavior.
+    if !buffer.isEmpty {
+      commit(candidates.first ?? buffer)
+    }
+    chineseMode.toggle()
+  }
 
   private func appendLetter(_ letter: String) {
     guard buffer.count < KeyMetrics.maxBufferLen else { return }
@@ -99,6 +144,7 @@ final class KeyboardModel {
 
   private func commit(_ text: String) {
     guard !text.isEmpty else { return }
+    host?.setComposingText("")
     host?.insertText(text)
     buffer = ""
     candidates = []
@@ -112,5 +158,6 @@ final class KeyboardModel {
       return
     }
     candidates = engine.search(buffer.lowercased(), context: context)
+    host?.setComposingText(buffer)
   }
 }
