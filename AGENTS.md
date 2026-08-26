@@ -169,9 +169,12 @@ xcodebuild -project platform/DawgIme/DawgIme.xcodeproj -scheme DawgIme \
   源码交付、编译后置。
 
 ### 三端键盘一致性约定
-- 键盘度量/交互规范三端逐字一致（候选栏 44、键高 42、行距 12、键距 6、
-  边距 3、圆角 4；拼写缓冲 ≤64、空格上屏首候选、退格先删缓冲、回车
-  上屏原始字母、shift 一次性大写、符号页直插）。实现文件：
+- 键盘度量/交互规范三端逐字一致（微信输入法风格：顶栏 44 空闲显示工具栏、
+  拼写时显示候选栏且首候选高亮；键高 42、行距 12、键距 6、边距 3、圆角 4；
+  底行五键 [123/ABC][，][空格][中/英][action]；拼写缓冲 ≤64、空格上屏首候选、
+  退格先删缓冲、回车/确定上屏原始字母、shift 一次性大写、符号页直插、
+  中/英切换先上屏缓冲、action 键空闲显示编辑器动作（accent 绿）/拼写时“确定”）。
+  实现文件：
   `KeySpec.swift` / `KeySpec.kt` / `KeySpec.ets`（度量与布局）+
   `KeyboardModel.swift` / `ImeSession.kt` / `KeyboardState.ets`（状态机）。
   改动任一端必须同步另两端并更新对应单测。

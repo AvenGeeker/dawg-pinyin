@@ -17,8 +17,8 @@
   `.dawg`；zhwiki + LCCC 语料 → charlm → `.clm`），产物落在 `assets/`
   （不入库；平台构建缺失时自动回退 tiny 测试资产）
 
-三端键盘 UI 遵循同一份度量/交互规范（苹果键盘尺寸：候选栏 44、键高 42、
-间距 6 等），分别实现于 `KeySpec.swift` / `KeySpec.kt` / `KeySpec.ets`，
+三端键盘 UI 遵循同一份度量/交互规范（微信输入法风格：顶栏 44、键高 42、
+间距 6、底行五键等），分别实现于 `KeySpec.swift` / `KeySpec.kt` / `KeySpec.ets`，
 改动任一端需同步另两端。
 
 工程约定（工具链、C++ 规范、构建与测试、Git 流程）见 [AGENTS.md](AGENTS.md)。
